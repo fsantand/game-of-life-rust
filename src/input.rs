@@ -31,9 +31,9 @@ impl InputHandler {
         }
     }
 
-    pub fn handle_mouse(&self, button: MouseButton, _cursor: [f64;2]) -> PlayerActions {
+    pub fn handle_mouse(&self, button: MouseButton, _cursor: [f64; 2]) -> PlayerActions {
         match self.click_mappings.contains_key(&button) {
-            true =>  self.click_mappings[&button],
+            true => self.click_mappings[&button],
             false => PlayerActions::Idle,
         }
     }
@@ -48,7 +48,7 @@ impl InputHandler {
 }
 
 /// Handles the input
-pub fn handle_input(handler: &InputHandler, event: Button, cursor: [f64;2]) ->PlayerActions {
+pub fn handle_input(handler: &InputHandler, event: Button, cursor: [f64; 2]) -> PlayerActions {
     match event {
         Button::Keyboard(key) => handler.handle_keyboard(key),
         Button::Mouse(button) => handler.handle_mouse(button, cursor),

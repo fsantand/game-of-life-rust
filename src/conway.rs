@@ -53,7 +53,7 @@ impl State {
     }
 
     pub fn generate_next_state(&mut self) {
-        let mut cells_to_change: Vec<([usize;2], bool)> = vec![].to_vec();
+        let mut cells_to_change: Vec<([usize; 2], bool)> = vec![].to_vec();
         self.current_generation += 1;
         println!("Generating gen {:?}", self.current_generation);
 
@@ -73,7 +73,7 @@ impl State {
         self.current_timer = self.fps;
     }
 
-    fn apply_rules(&mut self, x: usize, y: usize) -> Option<([usize;2], bool)> {
+    fn apply_rules(&mut self, x: usize, y: usize) -> Option<([usize; 2], bool)> {
         let neighbour_count = self.get_neighbour_count(x, y);
         if neighbour_count > 0 {
             println!("{:?}, {:?}", [x, y], neighbour_count);

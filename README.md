@@ -10,6 +10,7 @@ To run, simply run `cargo run`, it will fetch the dependencies and start the gam
 
 * `R` - Run simulation
 * `N` - Step over one generation
+* `C` - Clear board
 * `Left Click` - Toggle cell
 * `Right Click` - Count adjacent neighbors
 

@@ -67,6 +67,7 @@ fn main() {
     let mut input_handler = InputHandler::new();
     input_handler.add_mapping(Key::R, PlayerActions::RunSimulation);
     input_handler.add_mapping(Key::N, PlayerActions::NextStep);
+    input_handler.add_mapping(Key::C, PlayerActions::ClearBoard);
 
     input_handler.add_click_mapping(MouseButton::Left, PlayerActions::ToggleTile);
     input_handler.add_click_mapping(MouseButton::Right, PlayerActions::CountNeightbours);
@@ -79,6 +80,7 @@ fn main() {
         if let Some(args) = e.press_args() {
             match input::handle_input(&input_handler, args, cursor) {
                 PlayerActions::RunSimulation => game.toggle_simulation(),
+                PlayerActions::ClearBoard => game.clear_board(),
                 PlayerActions::ToggleTile => {
                     game.toggle_cell(transform_to_grid_coordinates(cursor), None, Some(get_random_color()));
                 }

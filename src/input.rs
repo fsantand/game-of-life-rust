@@ -9,6 +9,7 @@ pub enum PlayerActions {
     NextStep,
     ToggleTile,
     CountNeightbours,
+    ClearBoard,
 }
 
 pub struct InputHandler {

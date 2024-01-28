@@ -141,6 +141,10 @@ impl State {
         }
         count
     }
+
+    pub fn clear_board(&mut self) {
+        self.grid = vec![vec![Cell::new(); GRID_SIZE as usize]; GRID_SIZE as usize];
+    }
 }
 
 impl Default for State {

@@ -7,8 +7,8 @@ pub enum PlayerActions {
     Idle,
     RunSimulation,
     NextStep,
-    PreviousStep,
     ToggleTile,
+    CountNeightbours,
 }
 
 pub struct InputHandler {

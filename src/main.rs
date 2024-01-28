@@ -1,12 +1,11 @@
-use core::f64;
 use std::usize;
 
 use conway::{State, CELL_SIZE, GRID_SIZE};
 use input::{InputHandler, PlayerActions};
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::{
-    EventLoop, EventSettings, Events, Key, MouseButton, MouseCursorEvent, PressEvent,
-    RenderEvent, WindowSettings, UpdateEvent,
+    EventSettings, Events, Key, MouseButton, MouseCursorEvent, PressEvent, RenderEvent,
+    UpdateEvent, WindowSettings,
 };
 use piston_window::{clear, color, rectangle, Context, PistonWindow, Transformed};
 
@@ -32,13 +31,16 @@ fn paint_board(state: &State, c: Context, g: &mut GlGraphics) {
     }
 }
 
-fn transform_to_grid_coordinates(position: [f64;2]) ->[usize;2] {
-    [(position[1]/CELL_SIZE) as usize, (position[0]/CELL_SIZE) as usize]
+fn transform_to_grid_coordinates(position: [f64; 2]) -> [usize; 2] {
+    [
+        (position[1] / CELL_SIZE) as usize,
+        (position[0] / CELL_SIZE) as usize,
+    ]
 }
 
 fn main() {
     let opengl = OpenGL::V4_0;
-    let mut window: PistonWindow = WindowSettings::new("The Game of Life", (512, 512))
+    let mut window: PistonWindow = WindowSettings::new("The Game of Life", (1024, 1024))
         .exit_on_esc(true)
         .vsync(true)
         .build()
@@ -53,9 +55,9 @@ fn main() {
     let mut input_handler = InputHandler::new();
     input_handler.add_mapping(Key::R, PlayerActions::RunSimulation);
     input_handler.add_mapping(Key::N, PlayerActions::NextStep);
-    input_handler.add_mapping(Key::P, PlayerActions::PreviousStep);
 
     input_handler.add_click_mapping(MouseButton::Left, PlayerActions::ToggleTile);
+    input_handler.add_click_mapping(MouseButton::Right, PlayerActions::CountNeightbours);
 
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.mouse_cursor_args() {
@@ -64,10 +66,17 @@ fn main() {
 
         if let Some(args) = e.press_args() {
             match input::handle_input(&input_handler, args, cursor) {
-                PlayerActions::RunSimulation => todo!(),
-                PlayerActions::NextStep => todo!(),
-                PlayerActions::PreviousStep => todo!(),
-                PlayerActions::ToggleTile => game.toggle_cell(transform_to_grid_coordinates(cursor)),
+                PlayerActions::RunSimulation => game.toggle_simulation(),
+                PlayerActions::ToggleTile => {
+                    game.toggle_cell(transform_to_grid_coordinates(cursor), None);
+                }
+                PlayerActions::CountNeightbours => {
+                    let [x, y] = transform_to_grid_coordinates(cursor);
+                    println!("{:?}: #{:?}", [x, y], game.get_neighbour_count(y, x));
+                }
+                PlayerActions::NextStep => {
+                    game.generate_next_state();
+                }
                 _ => (),
             }
         }
@@ -81,6 +90,9 @@ fn main() {
         }
 
         if let Some(args) = e.update_args() {
+            if game.run_timer(args.dt) {
+                game.generate_next_state();
+            }
         }
     }
 }

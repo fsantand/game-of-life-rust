@@ -8,18 +8,30 @@ use piston::{
     UpdateEvent, WindowSettings,
 };
 use piston_window::{clear, color, rectangle, Context, PistonWindow, Transformed};
+use rand::Rng;
 
 mod conway;
 mod input;
 
 const CELL_RECT: [f64; 4] = [0.0, 0.0, CELL_SIZE as f64, CELL_SIZE as f64];
+const CELL_COLORS: [[f32;4];3] = [color::WHITE, color::CYAN, color::TEAL];
+
+fn get_random_color() ->[f32;4] {
+    let mut rng = rand::thread_rng();
+    let n = rng.gen_range(0..CELL_COLORS.len() as usize);
+    CELL_COLORS[n]
+}
 
 fn paint_board(state: &State, c: Context, g: &mut GlGraphics) {
     for j in 0..GRID_SIZE {
         for i in 0..GRID_SIZE {
-            match state.grid[j as usize][i as usize] {
+            let cell = state.grid[j as usize][i as usize];
+            match cell.alive {
                 true => rectangle(
-                    color::WHITE,
+                    match cell.color {
+                        Some(c) => c,
+                        None => color::WHITE,
+                    },
                     CELL_RECT,
                     c.transform
                         .trans(i as f64 * CELL_SIZE, j as f64 * CELL_SIZE),
@@ -68,7 +80,7 @@ fn main() {
             match input::handle_input(&input_handler, args, cursor) {
                 PlayerActions::RunSimulation => game.toggle_simulation(),
                 PlayerActions::ToggleTile => {
-                    game.toggle_cell(transform_to_grid_coordinates(cursor), None);
+                    game.toggle_cell(transform_to_grid_coordinates(cursor), None, Some(get_random_color()));
                 }
                 PlayerActions::CountNeightbours => {
                     let [x, y] = transform_to_grid_coordinates(cursor);

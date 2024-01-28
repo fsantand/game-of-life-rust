@@ -3,13 +3,30 @@ use std::{
     isize, usize,
 };
 
-pub const GRID_SIZE: i8 = 40;
-pub const CELL_SIZE: f64 = 32.0;
-pub const TIME_BETWEEN_GENERATIONS: f64 = 0.3;
+use crate::get_random_color;
+
+pub const GRID_SIZE: i8 = 80;
+pub const CELL_SIZE: f64 = 16.0;
+pub const TIME_BETWEEN_GENERATIONS: f64 = 0.1;
+
+#[derive(Debug, Clone, Copy)]
+pub struct Cell {
+    pub alive: bool,
+    pub color: Option<[f32; 4]>
+}
+
+impl Cell {
+    pub fn new() ->Cell {
+        Cell {
+            alive: false,
+            color: None
+        }
+    } 
+}
 
 #[derive(Debug)]
 pub struct State {
-    pub grid: Vec<Vec<bool>>,
+    pub grid: Vec<Vec<Cell>>,
     pub running: bool,
     pub fps: f64,
     pub current_timer: f64,
@@ -19,7 +36,7 @@ pub struct State {
 impl State {
     pub fn new() -> State {
         State {
-            grid: vec![vec![false; GRID_SIZE as usize]; GRID_SIZE as usize],
+            grid: vec![vec![Cell::new(); GRID_SIZE as usize]; GRID_SIZE as usize],
             running: false,
             fps: TIME_BETWEEN_GENERATIONS,
             current_timer: TIME_BETWEEN_GENERATIONS,
@@ -27,14 +44,22 @@ impl State {
         }
     }
 
-    pub fn toggle_cell(&mut self, position: [usize; 2], is_alive: Option<bool>) -> () {
+    pub fn toggle_cell(&mut self, position: [usize; 2], is_alive: Option<bool>, color: Option<[f32;4]>) -> () {
+        let mut cell = self.grid[position[0]][position[1]];
         match is_alive {
-            Some(state) => self.grid[position[0]][position[1]] = state,
-            None => self.grid[position[0]][position[1]] = !self.grid[position[0]][position[1]],
+            Some(state) => cell.alive = state,
+            None => cell.alive = !cell.alive,
         }
+
+        match color {
+            Some(c) => cell.color = Some(c),
+            None => cell.color = None,
+        }
+
+        self.grid[position[0]][position[1]] = cell;
         println!(
             "Cell at {:?} changed to {:?}",
-            position, self.grid[position[0]][position[1]]
+            position, cell
         );
     }
 
@@ -53,37 +78,37 @@ impl State {
     }
 
     pub fn generate_next_state(&mut self) {
-        let mut cells_to_change: Vec<([usize; 2], bool)> = vec![].to_vec();
+        let mut cells_to_change: Vec<([usize; 2], bool, Option<[f32;4]>)> = vec![].to_vec();
         self.current_generation += 1;
         println!("Generating gen {:?}", self.current_generation);
 
         for y in 0..GRID_SIZE {
             for x in 0..GRID_SIZE {
                 match self.apply_rules(x as usize, y as usize) {
-                    Some((position, state)) => cells_to_change.push((position, state)),
+                    Some((position, state, color)) => cells_to_change.push((position, state, color)),
                     None => (),
                 }
             }
         }
 
-        for (position, state) in cells_to_change {
-            self.toggle_cell(position, Some(state));
+        for (position, state, color) in cells_to_change {
+            self.toggle_cell(position, Some(state), color);
         }
 
         self.current_timer = self.fps;
     }
 
-    fn apply_rules(&mut self, x: usize, y: usize) -> Option<([usize; 2], bool)> {
+    fn apply_rules(&mut self, x: usize, y: usize) -> Option<([usize; 2], bool, Option<[f32;4]>)> {
         let neighbour_count = self.get_neighbour_count(x, y);
         if neighbour_count > 0 {
             println!("{:?}, {:?}", [x, y], neighbour_count);
         }
 
-        match (neighbour_count, self.grid[y][x]) {
-            (c, true) if c < 2 => Some(([y, x], false)),
+        match (neighbour_count, self.grid[y][x].alive) {
+            (c, true) if c < 2 => Some(([y, x], false, None)),
             (2 | 3, true) => None,
-            (c, true) if c > 3 => Some(([y, x], false)),
-            (3, false) => Some(([y, x], true)),
+            (c, true) if c > 3 => Some(([y, x], false, None)),
+            (3, false) => Some(([y, x], true, Some(get_random_color()))),
             _ => None,
         }
     }
@@ -108,12 +133,18 @@ impl State {
                     continue;
                 }
 
-                match self.grid[j][i] {
+                match self.grid[j][i].alive {
                     true => count += 1,
                     _ => (),
                 }
             }
         }
         count
+    }
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self::new()
     }
 }
